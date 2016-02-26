@@ -52,9 +52,8 @@ const common = {
     ],
     preLoaders: [
       {
-        test: /\.js?$/,
-        loaders: ['jshint'],
-        // define an include so we check just the files we need
+        test: /\.jsx?$/,
+        loaders: ['eslint'],
         include: PATHS.app
       }
     ]

@@ -2,6 +2,6 @@ import './main.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './components/App.jsx';
+import App from "./components/App.jsx"; //eslint-disable-line
 
 ReactDOM.render(<App />, document.getElementById('app'));
