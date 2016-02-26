@@ -65,11 +65,11 @@ export default class Note extends React.Component {
 
     if(this.props.onEdit) {
       this.props.onEdit(this.props.id, value);
-
-      // Exit edit mode.
-      this.setState({
-        editing: false
-      });
     }
+
+    // Exit edit mode.
+    this.setState({
+      editing: false
+    });
   };
 }
