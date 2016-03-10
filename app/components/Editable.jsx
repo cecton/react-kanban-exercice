@@ -1,21 +1,14 @@
 import React from 'react';
 
-export default class Note extends React.Component {
-  constructor(props) {
-    super(props);
-
-    // Track `editing` state.
-    this.state = {
-      editing: false
-    };
-  }
+export default class Editable extends React.Component {
   render() {
-    // Render the component differently based on state.
-    if(this.state.editing) {
-      return this.renderEdit();
-    }
+    const {value, onEdit, onValueClick, editing, ...props} = this.props;
 
-    return this.renderNote();
+    return (
+      <div {...props}>
+        {editing ? this.renderEdit() : this.renderValue()}
+      </div>
+    );
   }
   renderEdit = () => {
     // We deal with blur and input handlers here. These map to DOM events.
@@ -29,37 +22,34 @@ export default class Note extends React.Component {
     // React lifecycle hooks.
     return <input type="text"
       ref={
-        (e) => e ? e.selectionStart = this.props.task.length : null
+        (e) => e ? e.selectionStart = this.props.value.length : null
       }
       autoFocus={true}
-      defaultValue={this.props.task}
+      defaultValue={this.props.value}
       onBlur={this.finishEdit}
       onKeyPress={this.checkEnter} />;
   };
-  renderNote = () => {
-    // If the user clicks a normal note, trigger editing logic.
+  renderValue = () => {
     const onDelete = this.props.onDelete;
+
     return (
-      <div>
-        <span className="task" onClick={this.edit}>{this.props.task}</span>
+      <div onClick={this.enterEdit}>
+        <span className="value">{this.props.value}</span>
         {onDelete ? this.renderDelete() : null }
       </div>
-    )
+    );
   };
   renderDelete = () => {
     return (
       <button
-        className="delete-note"
-        onClick={this.deleteNote}>
+        className="delete"
+        onClick={this.delete}>
         x
       </button>
     );
   };
-  edit = () => {
-    // Enter edit mode.
-    this.setState({
-      editing: true
-    });
+  enterEdit = () => {
+    this.props.onValueClick(this.props.id);
   };
   checkEnter = (e) => {
     // The user hit *enter*, let's finish up.
@@ -81,13 +71,8 @@ export default class Note extends React.Component {
     if(this.props.onEdit) {
       this.props.onEdit(this.props.id, value);
     }
-
-    // Exit edit mode.
-    this.setState({
-      editing: false
-    });
   };
-  deleteNote = () => {
+  delete = () => {
     if(this.props.onDelete) {
       this.props.onDelete(this.props.id);
     }
