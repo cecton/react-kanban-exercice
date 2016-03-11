@@ -93,6 +93,20 @@ class LaneStore {
 
     this.setState({lanes});
   }
+  moveLane({sourceId, targetId}) {
+    const lanes = this.lanes;
+    const sourceLane = lanes.filter(lane => lane.id === sourceId)[0];
+    const targetLane = lanes.filter(lane => lane.id === targetId)[0];
+    const sourceLaneIndex = this.lanes.indexOf(sourceLane);
+    const targetLaneIndex = this.lanes.indexOf(targetLane);
+
+    this.lanes = update(this.lanes, {
+      $splice: [
+        [sourceLaneIndex, 1],
+        [targetLaneIndex, 0, sourceLane]
+      ]
+    });
+  }
 }
 
 export default alt.createStore(LaneStore, 'LaneStore');

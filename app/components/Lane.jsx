@@ -5,8 +5,29 @@ import NoteActions from '../actions/NoteActions';
 import NoteStore from '../stores/NoteStore';
 import LaneActions from '../actions/LaneActions';
 import Editable from './Editable.jsx';
-import {DropTarget} from 'react-dnd';
+import {DragSource, DropTarget} from 'react-dnd';
 import ItemTypes from '../constants/itemTypes';
+
+const laneSource = {
+  beginDrag(props) {
+    return {id: props.id};
+  },
+  isDragging(props, monitor) {
+    return props.id === monitor.getItem().id;
+  }
+};
+
+const laneTarget = {
+  hover(targetProps, monitor) {
+    const targetId = targetProps.id;
+    const sourceProps = monitor.getItem();
+    const sourceId = sourceProps.id;
+
+    if(sourceId !== targetId) {
+      targetProps.onMove({sourceId, targetId});
+    }
+  }
+};
 
 const noteTarget = {
   hover(targetProps, monitor) {
@@ -22,14 +43,23 @@ const noteTarget = {
   }
 };
 
-@DropTarget(ItemTypes.NOTE, noteTarget, (connect) => ({
+@DragSource(ItemTypes.LANE, laneSource, (connect, monitor) => ({
+  connectDragSource: connect.dragSource(),
+  isDragging: monitor.isDragging() // map isDragging() state to isDragging prop
+}))
+@DropTarget(ItemTypes.LANE, laneTarget, (connect) => ({
   connectDropTarget: connect.dropTarget()
+}))
+@DropTarget(ItemTypes.NOTE, noteTarget, (connect) => ({
+  connectNoteDropTarget: connect.dropTarget()
 }))
 export default class Lane extends React.Component {
   render() {
-    const {connectDropTarget, lane, ...props} = this.props;
+    const {connectDragSource, connectDropTarget, connectNoteDropTarget,
+      isDragging, lane, editing, onMove, ...props} = this.props;
+    const dragSource = editing ? a => a : connectDragSource;
 
-    return connectDropTarget(
+    return dragSource(connectDropTarget(connectNoteDropTarget(
       <div {...props}>
         <div className="lane-header">
           <div className="lane-add-note">
@@ -53,7 +83,7 @@ export default class Lane extends React.Component {
             onDelete={this.deleteNote} />
         </AltContainer>
       </div>
-    );
+    )));
   }
   editNote(id, task) {
     // Don't modify if trying set an empty value
