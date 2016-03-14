@@ -97,7 +97,10 @@ export default class Lane extends React.Component {
   }
   addNote = () => {
     const laneId = this.props.lane.id;
-    const note = NoteActions.create({task: 'New task'});
+    const note = NoteActions.create({
+        task: 'New task',
+        editing: true
+      });
 
     LaneActions.attachToLane({
       noteId: note.id,
