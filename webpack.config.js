@@ -5,6 +5,8 @@ const stylelint = require('stylelint')
 
 const NpmInstallPlugin = require('npm-install-webpack-plugin')
 
+// Load *package.json* so we can use `dependencies` from there
+const pkg = require('./package.json');
 
 const TARGET = process.env.npm_lifecycle_event
 const PATHS = {
@@ -28,7 +30,7 @@ const common = {
   },
   output: {
     path: PATHS.build,
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   module: {
     loaders: [
@@ -113,7 +115,25 @@ if(TARGET === 'start' || !TARGET) {
 
 if(TARGET === 'build') {
   module.exports = merge(common, {
+    // Define vendor entry point needed for splitting
+    entry: {
+      vendor: Object.keys(pkg.dependencies).filter(function(v) {
+        // Exclude alt-utils as it won't work with this setup
+        // due to the way the package has been designed
+        // (no package.json main).
+        return v !== 'alt-utils';
+      })
+    },
+    output: {
+      path: PATHS.build,
+      filename: '[name].[chunkhash].js',
+      chunkFilename: '[chunkhash].js'
+    },
     plugins: [
+      // Extract vendor and manifest files
+      new webpack.optimize.CommonsChunkPlugin({
+        names: ['vendor', 'manifest']
+      }),
       // Setting DefinePlugin affects React library size!
       // DefinePlugin replaces content "as is" so we need some extra quotes
       // for the generated code to make sense
